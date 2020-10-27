@@ -1,2 +1,2 @@
 # wirecell-kernel
-Extract wircell deconvolution kernel.
+Extract wirecell deconvolution kernel.
