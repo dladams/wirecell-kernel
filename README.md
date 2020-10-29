@@ -18,5 +18,5 @@ integrating over their cells.
 
 The electronics shaping is taken from the CE (cold electronics) response function whos shape has been
 verified with pulser data, e.g. in protoDUNE.
-The root script [RebinTpad](Root/RebinTpad.C) can be used to convolute thhis with the detector response
+The root script [rebinTpad](Root/rebinTpad.C) can be used to convolute thhis with the detector response
 and obtain the complete deconvolution kernel.
