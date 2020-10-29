@@ -1,0 +1,70 @@
+#!/bin/sh
+
+WIRE=$1
+CELL=
+if [ $WIRE -eq $WIRE ] 2>/dev/null; then
+  CELL=$((WIRE+10))
+fi
+OFF="$2"
+ACT=$3
+
+TICK0=-20
+NTICK=40
+
+if [ -z "$OFF" ]; then
+  echo Usage: $0 WIRE OFF ACT
+  echo "  WIRE = 0 for central, +/-1 1st neighbors, ...."
+  echo "   OFF = offset [0.1 us] for binning 10 MHz to 2 MHz"
+  echo "   ACT = draw to draw plots or post to post plots"
+  exit 0
+fi
+
+AWIRE=$WIRE
+if [ $WIRE -lt 0 ]; then
+  SWIRE=m$((-$WIRE))
+else
+  SWIRE=p$WIRE
+fi
+
+BAS1=response${WIRE}000w1000
+BAS2=${BAS1}Smeared
+BAS3=${BAS2}Rebin131
+SCELL=$CELL
+if [ ${#SCELL} -eq 1 ]; then SCELL=0$SCELL; fi
+BAS4=wirecellResponse$SCELL
+
+DIR=$WIRECELL_KERNEL_DIR/root
+root.exe -b -q $DIR'/plotResponse.C('$WIRE', 1, -0.025, 0.14)' &&
+# Smear, rebin and plot response from text files iff WIRE is integer.
+if [ -n "$CELL" ]; then
+  root.exe -b -q $DIR'/cesmearTpad.C("'$BAS1'", -0.0105, 0.0315)'
+  for IOFF in $OFF; do
+    root.exe -b -q $DIR'/rebinTpad.C("'$BAS2'", '$IOFF', '$TICK0', '$NTICK')'
+  done
+  root.exe -b -q $DIR'/plotWirecell.C('$CELL', 106, 146, -0.00215, 0.00645)'
+fi
+
+if [ "$ACT" = draw ]; then
+  echo Drawing plots
+  view $BAS1.png &
+  view $BAS2.png &
+  view $BAS3.png &
+  view $BAS4.png &
+
+elif [ "$ACT" = post ]; then
+  echo Posting plots
+  WDIR=~/wwwdune/protodune/response/wire$SWIRE
+  rm -rf $WDIR
+  mkdir $WDIR
+  for BAS in $BAS1 $BAS2 $BAS4; do
+    cp $BAS.png $WDIR
+    cp $BAS.tpad $WDIR
+  done
+  cp $BAS2-*.txt $WDIR
+  cp ${BAS2}Rebin*.png $WDIR
+  makeIndex $WDIR
+  makeIndex $WDIR/.. k
+
+else
+  echo "Ignoring invalid action" $ACT
+fi

@@ -1,0 +1,3 @@
+#!/bin/sh
+
+root.exe -q $WIRECELL_KERNEL_DIR/root/plotResponse.C

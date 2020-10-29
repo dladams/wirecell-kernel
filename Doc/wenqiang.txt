@@ -1,0 +1,4 @@
+From Wenqiang 23jun2020
+The most recent fine-grained field response (without electronics response) is here.
+https://www.phy.bnl.gov/~wgu/protodune/field_response/20200616_json_bz2_convert_root/dune-garfield-1d565.root
+I corrected the units of the induced current. Instead of microampere, it should be electrons/ns. So if you take the integral of a central-path electron (along y axis), it should be close to 0.01 e/ns. As the time bins are in 0.1us, the integral is 1 electron. Since we have several electron paths in a single wire pitch, we take the average of the first 6 paths.

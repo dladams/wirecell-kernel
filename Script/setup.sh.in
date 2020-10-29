@@ -1,0 +1,15 @@
+# wirecell-kernel setup.sh
+
+if [ -n "$DUNETPC_DIR" ]; then
+  echo Setting up wirecell-kernel
+  INSDIR=$(dirname $(readlink -f "$BASH_SOURCE"))
+  export ${PROJECT_UPNAME}_DIR=$INSDIR
+  export ${PROJECT_UPNAME}_VERSION=${PROJECT_VERSION}
+  export ${PROJECT_UPNAME}_DATA=$INSDIR/data
+  PATH=$INSDIR/bin:$PATH
+  #LD_LIBRARY_PATH=$INSDIR/lib:$LD_LIBRARY_PATH
+  #CET_PLUGIN_PATH=$INSDIR/lib:$CET_PLUGIN_PATH
+  #PYTHONPATH=$INSDIR/python:$PYTHONPATH
+else
+  echo First setup dunetpc.
+fi

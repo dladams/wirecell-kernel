@@ -1,0 +1,3 @@
+#!/bin/sh
+
+Welcome to wirecell-kernel, a package for estracting the wirecell deconvolution kernel
