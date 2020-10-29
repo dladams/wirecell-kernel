@@ -8,7 +8,7 @@ Each histogram gives the induced current for the central wire as a function time
 and as function of deposited charge position (wire coordinate) with a step size one tenth
 of the wire spacing.
 
-The histograms are read here with the Root macro [Root/makeResponseHisto.C][makeResponseHisto]
+The histograms are read here with the Root macro [makeResponseHisto](Root/makeResponseHisto.C)
 which integrates over a specified coordinate range and returns a histogram with the
 induced current as function time for charge deposited unifomly over that range.
 Th detetor contribution to deconvolution kernel is obtained by integrating over the
@@ -18,5 +18,5 @@ integrating over their cells.
 
 The electronics shaping is taken from the CE (cold electronics) response function whos shape has been
 verified with pulser data, e.g. in protoDUNE.
-The root script [Root/RebinTpad.C][RebinTpad] can be used to convolute thhis with the detector response
+The root script [RebinTpad](Root/RebinTpad.C) can be used to convolute thhis with the detector response
 and obtain the complete deconvolution kernel.
