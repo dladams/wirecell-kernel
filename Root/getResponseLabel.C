@@ -1,4 +1,4 @@
-void getResponseLabel(TH1* phk, string& slab, double ythr =0.0) {
+void getResponseLabel(TH1* phk, string& slab, double ythr =0.0, int prec =3) {
   const string myname = "getResponseLabel: ";
   int nbin = phk->GetNbinsX();
   int ineg=1;
@@ -40,8 +40,8 @@ void getResponseLabel(TH1* phk, string& slab, double ythr =0.0) {
   double area = phk->Integral(ithr1, ithr2);
   double asum = aplu - amin;
   double asym = (aplu + amin)/asum;
-  sslab << "Area = " << std::fixed << std::setprecision(3) << area;
-  sslab << ", #Sigma|Area| = " << std::fixed << std::setprecision(3) << asum;
+  sslab << "Area = " << std::fixed << std::setprecision(prec) << area;
+  sslab << ", #Sigma|Area| = " << std::fixed << std::setprecision(prec) << asum;
   sslab << ", Asym = " << std::fixed << std::setprecision(3) << asym;
   slab += sslab.str();
 }
