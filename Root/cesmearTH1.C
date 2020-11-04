@@ -19,17 +19,12 @@ void smearVector(const vector<double>& data, const vector<double>& smear, unsign
   }
 }
   
-// Smear a histogram.
-void cesmearTH1(TH1* ph) {
+// Smear a vector with one entry per dx ticks.
+void cesmearVector(vector<double>& data, double dx =1) {
   using Index = unsigned int;
-  Index ndat = ph->GetNbinsX();
-  vector<double> data(ndat);
-  for ( Index idat=0; idat<ndat; ++idat ) {
-    data[idat] = ph->GetBinContent(idat+1);
-  }
+  Index ndat = data.size();
   double shaping = 2.2;
   double gain = 1.0;
-  double dx = ph->GetBinWidth(1);
   vector<double> smear;
   double sum = 0.0;
   for ( Index isme=0; isme<1000; ++isme ) {
@@ -45,8 +40,21 @@ void cesmearTH1(TH1* ph) {
   Index ioff = 1.3*shaping/dx;
   vector<double> res;
   smearVector(data, smear, ioff, res);
+  data = res;
+}
+
+// Smear a histogram.
+void cesmearTH1(TH1* ph) {
+  using Index = unsigned int;
+  Index ndat = ph->GetNbinsX();
+  vector<double> data(ndat);
   for ( Index idat=0; idat<ndat; ++idat ) {
-    ph->SetBinContent(idat+1, res[idat]);
+    data[idat] = ph->GetBinContent(idat+1);
+  }
+  double dx = ph->GetBinWidth(1);
+  cesmearVector(data, dx);
+  for ( Index idat=0; idat<ndat; ++idat ) {
+    ph->SetBinContent(idat+1, data[idat]);
   }
 }
 
