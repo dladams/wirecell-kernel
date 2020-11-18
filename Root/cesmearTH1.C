@@ -1,17 +1,19 @@
 #include "dune/DuneCommon/coldelecResponse.h"
 
 void smearVector(const vector<double>& data, const vector<double>& smear, unsigned int ioff, vector<double>& res) {
+  const string myname = "smearVector: ";
   using Index = unsigned int;
   Index ndat = data.size();
   Index nsme = smear.size();
   res.resize(ndat, 0.0);
   for ( Index ires=0; ires<ndat; ++ires ) {
     double resval = 0.0;
-    Index idat = ioff + ires > nsme ? ires + ioff - nsme : 0;
+    Index idat = ioff + ires >= nsme ? ires + ioff - nsme + 1 : 0;
     while ( idat < ndat ) {
       if ( idat > ioff + ires ) break;
       Index isme = ioff + ires - idat;
       resval += data[idat]*smear[isme];
+      if ( isme >= nsme ) cout << myname << "ERROR: " << ires << "=" << idat << "+" << isme << ": " << resval << endl;
       //cout << "XXX " << ires << "=" << idat << "+" << isme << ": " << resval << endl;
       ++idat;
     }
