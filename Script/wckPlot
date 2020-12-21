@@ -1,32 +1,77 @@
 #!/bin/sh
 
 WIRE=$1
-CELL=
-if [ $WIRE -eq $WIRE ] 2>/dev/null; then
-  CELL=$((WIRE+10))
+WIDTH=${2:-1.0}
+YRAN1=$3
+if [ -z "$YRAN1" -o "$YRAN1" = ":" ]; then
+  YRAN1="-0.025:0.140"
 fi
-OFF="$2"
-ACT=$3
+YRAN2=$4
+if [ -z "$YRAN2" -o "$YRAN2" = ":" ]; then
+  YRAN2="-0.0105:0.0315"
+fi
+OFF="$5"
+ACT=$6
+
+if [ -z "$WIRE" -o "$WIRE" = "-h" ]; then
+  echo Usage: $0  [WIRE [WIDTH [YRAN1 [YRAN2 [OFF [ACT]]]]]]
+  echo "   WIRE = center of wire range: 0 is central, +/-1 are first 1st neighbors, ...."
+  echo "  WIDTH = width of wire range, e.g. 1 for one cell, ...."
+  echo "  YRAN1 = YMIN:YMAX for raw response plot"
+  echo "  YRAN2 = YMIN:YMAX for smeared response plot"
+  echo "    OFF = offset(s) [0.1 us] used in rebinning smeared response to 2 MHz"
+  echo "    ACT = draw to draw plots or post to post plots"
+  exit 0
+fi
 
 TICK0=-20
 NTICK=40
 
-if [ -z "$OFF" ]; then
-  echo Usage: $0 WIRE OFF ACT
-  echo "  WIRE = 0 for central, +/-1 1st neighbors, ...."
-  echo "   OFF = offset [0.1 us] for binning 10 MHz to 2 MHz"
-  echo "   ACT = draw to draw plots or post to post plots"
-  exit 0
+if [ ${WIRE:0:1} = "s" ]; then
+  WIRE=${WIRE:1}
+  SYMM=true
+  echo Symmetrizing wire $WIRE
+else
+  SYMM=
+fi
+CELL=
+if [ $WIRE -eq $WIRE ] 2>/dev/null; then
+  CELL=$((WIRE+10))
+fi
+YMIN1=$(echo $YRAN1 | sed 's/:.*//g')
+YMAX1=$(echo $YRAN1 | sed 's/.*://g')
+CHK=$(bc <<< $YMAX1'>'$YMIN1 2>>/dev/null)
+if [ "$CHK" != 1 ]; then
+  echo Invalid range 1: $YRAN1
+  exit 1
+fi
+
+YMIN2=$(echo $YRAN2 | sed 's/:.*//g')
+YMAX2=$(echo $YRAN2 | sed 's/.*://g')
+CHK=$(bc <<< $YMAX2'>'$YMIN2 2>>/dev/null)
+if [ "$CHK" != 1 ]; then
+  echo Invalid range 1: $YRAN2
+  exit 1
 fi
 
 AWIRE=$WIRE
-if [ $WIRE -lt 0 ]; then
-  SWIRE=m$((-$WIRE))
-else
-  SWIRE=p$WIRE
+SIGN="p"
+if [ ${WIRE:0:1} = "-" ]; then
+  AWIRE=${WIRE:1}
+  SIGN="m"
 fi
+if [ -n "$SYMM" ]; then
+  SIGN="s"
+fi
+SWIR=$(bc -l <<<'1000*'$AWIRE | sed 's/\..*//')
+while [ ${#SWIR} -lt 4 ]; do SWIR=0$SWIR; done
+SWIR=${SIGN}$SWIR
 
-BAS1=response${WIRE}000w1000
+SWID=$(bc -l <<<'1000*'$WIDTH | sed 's/\..*//')
+while [ ${#SWID} -lt 4 ]; do SWID=0$SWID; done
+
+SBIN=${SWIR}w$SWID
+BAS1=response$SBIN
 BAS2=${BAS1}Smeared
 BAS3=${BAS2}Rebin131
 SCELL=$CELL
@@ -34,14 +79,28 @@ if [ ${#SCELL} -eq 1 ]; then SCELL=0$SCELL; fi
 BAS4=wirecellResponse$SCELL
 
 DIR=$WIRECELL_KERNEL_DIR/root
-root.exe -b -q $DIR'/plotResponse.C('$WIRE', 1, -0.025, 0.14)' &&
-# Smear, rebin and plot response from text files iff WIRE is integer.
-if [ -n "$CELL" ]; then
-  root.exe -b -q $DIR'/cesmearTpad.C("'$BAS1'", -0.0105, 0.0315)'
-  for IOFF in $OFF; do
-    root.exe -b -q $DIR'/rebinTpad.C("'$BAS2'", '$IOFF', '$TICK0', '$NTICK')'
-  done
-  root.exe -b -q $DIR'/plotWirecell.C('$CELL', 106, 146, -0.00215, 0.00645)'
+if [ -n "$SYMM" ]; then
+  root.exe -b -q $DIR'/plotResponseSymmetric.C('$WIRE', '$WIDTH', '$YMIN1', '$YMAX1')'
+else
+  root.exe -b -q $DIR'/plotResponse.C('$WIRE', '$WIDTH', '$YMIN1', '$YMAX1')'
+fi
+
+# Smear, rebin and plot response from text files.
+echo cell $CELL
+echo $BAS1 $BAS4
+if [ -r $BAS1.tpad ]; then
+  root.exe -b -q $DIR'/cesmearTpad.C("'$BAS1'", '$YMIN2', '$YMAX2')'
+  if [ -n "$OFF" ]; then
+    for IOFF in $OFF; do
+      root.exe -b -q $DIR'/rebinTpad.C("'$BAS2'", "'$SBIN'", '$IOFF', '$TICK0', '$NTICK')'
+    done
+  fi
+  if [ -n "$CELL" ]; then
+    root.exe -b -q $DIR'/plotWirecell.C('$CELL', 106, 146, -0.00215, 0.00645)'
+  fi
+else
+  echo File not found: $BAS1.tpad 
+  exit 1
 fi
 
 if [ "$ACT" = draw ]; then
@@ -53,7 +112,7 @@ if [ "$ACT" = draw ]; then
 
 elif [ "$ACT" = post ]; then
   echo Posting plots
-  WDIR=~/wwwdune/protodune/response/wire$SWIRE
+  WDIR=~/wwwdune/protodune/response/wire$SWIR
   rm -rf $WDIR
   mkdir $WDIR
   for BAS in $BAS1 $BAS2 $BAS4; do

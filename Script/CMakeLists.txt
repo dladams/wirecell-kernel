@@ -10,6 +10,7 @@ install(
 PROGRAMS
   wirecell-kernel-help
   wckPlot
+  wckDraw2dResponse
 DESTINATION bin
 )
 

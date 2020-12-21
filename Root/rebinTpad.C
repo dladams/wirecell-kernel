@@ -7,7 +7,10 @@
 // The input data if offset by ioff bins. e.g. tick 0 includes
 // time samples -ioff through -ioff+4.
 
-void rebinTpad(string sfbase, int ioff, int tick1, int ntick) {
+//  sfbase: Base for the file containing the input reponse histogram.
+//  sbin: Label for /Area
+//
+void rebinTpad(string sfbase, string sbin, int ioff, int tick1, int ntick) {
   const string myname = "rebinTpad: ";
   string sfin = sfbase + ".tpad";
   string soff = to_string(abs(ioff));
@@ -35,7 +38,8 @@ void rebinTpad(string sfbase, int ioff, int tick1, int ntick) {
     httl += ", offset " + to_string(ioff);
     httl += "; Tick; Response [/tick]";
     int tick2 = tick1 + ntick;
-    cout << "Histogram has " << ntick << " ticks: [" << tick1 << ", " << tick2 << ")" << endl;
+    cout << myname << "*** Histogram " << hnam << " has " << ntick << " ticks: [" << tick1 << ", " << tick2 << ")" << endl;
+    cout << myname << "Title: " << httl << endl;
     TH1* pho = new TH1F(hnam.c_str(), httl.c_str(), ntick, tick1, tick2);
     pho->SetStats(0);
     pho->SetLineColor(phi->GetLineColor());
@@ -45,11 +49,24 @@ void rebinTpad(string sfbase, int ioff, int tick1, int ntick) {
     ibin -= ioff;
     ++ibin;
     int itik = 0;
+    // Create suffix for fcl name.
+    string sview;
+    if ( hnam.substr(1,6) == "kernel" ) {
+      char cview = hnam[0];
+      sview = cview == 'x' ? "X" :
+              cview == 'u' ? "U" :
+              cview == 'v' ? "V" : "";
+    }
+    if ( sview.size() == 0 ) {
+      cout << myname << "WARNING: View name not found." << endl;
+    }
+    string ssuf = sview + sbin;
+    cout << myname << "Bin label: " << ssuf << endl;
     // Create fcl.
     string soff = string("off") + ( ioff < 0 ? "m" : "p" ) + to_string(abs(ioff));
     string stout = sfbase + "-" + soff + "-" + hnam.substr(0,1) + ".txt";
     ofstream ftout(stout.c_str());
-    ftout << "  ResponseVector: [";
+    ftout << "  ResponseVector" << ssuf << ": [";
     int ftmod = 10;
     cout << myname << "Rebin factor: " << rebin << endl;
     cout << myname << "Input bin count: " << phi->GetNbinsX() << endl;

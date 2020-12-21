@@ -1,0 +1,8 @@
+#!/bin/sh
+
+VIEW=$1
+if [ -z "$VIEW" ]; then
+  VIEW=x
+fi
+
+root.exe -b -q $WIRECELL_KERNEL_DIR/root/draw2dResponse.C'("'$VIEW'")'

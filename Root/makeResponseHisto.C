@@ -74,6 +74,7 @@ TH1* makeResponseHisto(string sview, string fnamin, double zc, double dz) {
     phk = phr->ProjectionY(hnamk.c_str(), ibin1, ibin1);
     phk->Scale(xbin2 - xbin1);
   }
+  phk->Sumw2(false);
   ostringstream ssttl;
   ssttl << "Response for charge deposited at wire " << zc << " with width " << dz;
   string sttl = ssttl.str();
@@ -90,4 +91,17 @@ TH1* makeResponseHisto(string sview, string fnamin, double zc, double dz) {
   phk->SetStats(0);
   phk->SetLineWidth(2);
   return phk;
+}
+
+TH1* makeSymmetricResponseHisto(string sview, string fnamin, double zc, double dz) {
+  TH1* ph = makeResponseHisto(sview, fnamin, zc, dz);
+  string sviewtmp = sview;
+  TH1* phtmp = makeResponseHisto(sviewtmp, fnamin, -zc, dz);
+  ph->Add(phtmp, 1.0);
+  ph->Scale(0.5);
+  ostringstream ssttl;
+  ssttl << "Symmetrized response for charge deposited at wire " << zc << " with width " << dz;
+  string sttl = ssttl.str();
+  ph->SetTitle(sttl.c_str());
+  return ph;
 }
