@@ -9,8 +9,11 @@
 
 //  sfbase: Base for the file containing the input reponse histogram.
 //  sbin: Label for /Area
+//  (tick1, tick1+ntick): Tick range
+//  fclfac: Scale factor for the fcl response file (0.0 ==> no fcl)
+//          E.g. 1/width
 //
-void rebinTpad(string sfbase, string sbin, int ioff, int tick1, int ntick) {
+void rebinTpad(string sfbase, string sbin, int ioff, int tick1, int ntick, float fclfac =0.0) {
   const string myname = "rebinTpad: ";
   string sfin = sfbase + ".tpad";
   string soff = to_string(abs(ioff));
@@ -65,12 +68,14 @@ void rebinTpad(string sfbase, string sbin, int ioff, int tick1, int ntick) {
     // Create fcl.
     string soff = string("off") + ( ioff < 0 ? "m" : "p" ) + to_string(abs(ioff));
     string stout = sfbase + "-" + soff + "-" + hnam.substr(0,1) + ".txt";
+    if ( fclfac <= 0.0 ) stout = "/dev/null/" + stout;
     ofstream ftout(stout.c_str());
     ftout << "  ResponseVector" << ssuf << ": [";
     int ftmod = 10;
     cout << myname << "Rebin factor: " << rebin << endl;
     cout << myname << "Input bin count: " << phi->GetNbinsX() << endl;
     cout << myname << "Starting input bin: " << ibin << endl;
+    cout << myname << "Fcl factor: " << fclfac << endl;
     for ( int itik=0; itik<ntick; ++itik ) {
       double val = 0.0;
       for ( int ireb=0; ireb<rebin; ++ireb ) {
@@ -79,7 +84,7 @@ void rebinTpad(string sfbase, string sbin, int ioff, int tick1, int ntick) {
       pho->SetBinContent(itik+1, val);
       if ( itik ) ftout << ",";
       ftout << (itik%ftmod == 0 ? "\n   " : "");
-      ftout << setw(12) << val;
+      ftout << setw(12) << fclfac*val;
     }
     cout << myname << "Final input bin: " << ibin-1 << endl;
     ftout << "\n  ]\n";
