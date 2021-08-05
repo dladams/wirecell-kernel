@@ -92,7 +92,7 @@ if [ -r $BAS1.tpad ]; then
   root.exe -b -q $DIR'/cesmearTpad.C("'$BAS1'", '$YMIN2', '$YMAX2')'
   if [ -n "$OFF" ]; then
     for IOFF in $OFF; do
-      root.exe -b -q $DIR'/rebinTpad.C("'$BAS2'", "'$SBIN'", '$IOFF', '$TICK0', '$NTICK')'
+      root.exe -b -q $DIR'/rebinTpad.C("'$BAS2'", "'$SBIN'", '$IOFF', '$TICK0', '$NTICK', 1.0/'$WIDTH')'
     done
   fi
   if [ -n "$CELL" ]; then
@@ -115,12 +115,18 @@ elif [ "$ACT" = post ]; then
   WDIR=~/wwwdune/protodune/response/wire$SWIR
   rm -rf $WDIR
   mkdir $WDIR
-  for BAS in $BAS1 $BAS2 $BAS4; do
-    cp $BAS.png $WDIR
-    cp $BAS.tpad $WDIR
+  #for BAS in $BAS1 $BAS2 $BAS3; do
+  #  echo Copying $BAS
+  #  cp $BAS.png $WDIR
+  #  cp $BAS.tpad $WDIR
+  #done
+  for SUF in png tpad; do
+    cp $BAS1.$SUF $WDIR
+    cp $BAS2.$SUF $WDIR
+    cp ${BAS2}Rebin*.$SUF $WDIR
   done
-  cp $BAS2-*.txt $WDIR
-  cp ${BAS2}Rebin*.png $WDIR
+  #cp $BAS1.txt $WDIR
+  cp $BAS2*.txt $WDIR
   makeIndex $WDIR
   makeIndex $WDIR/.. k
 
