@@ -11,7 +11,7 @@ of the wire spacing.
 The histograms are read here with the Root macro [makeResponseHisto](Root/makeResponseHisto.C)
 which integrates over a specified coordinate range and returns a histogram with the
 induced current as function time for charge deposited unifomly over that range.
-Th detetor contribution to deconvolution kernel is obtained by integrating over the
+The detector contribution to deconvolution kernel is obtained by integrating over the
 cell associated with central wire.
 Contributions from neighboring wires (e.g. as input to 2D deconvolution) can be estimated by
 integrating over their cells.

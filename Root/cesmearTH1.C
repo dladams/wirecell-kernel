@@ -1,4 +1,4 @@
-#include "dune/DuneCommon/coldelecResponse.h"
+#include "dune/DuneCommon/Utility/coldelecResponse.h"
 
 void smearVector(const vector<double>& data, const vector<double>& smear, unsigned int ioff, vector<double>& res) {
   const string myname = "smearVector: ";
